@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/board/script/main.js"></script>
+    <link rel="stylesheet" href="/board/css/main.css">
+    <title>list 연습페이지</title>
+    <script>
+
+
+        function getpage(){
+            let page = parseInt(location.search.substr(6));
+            if(isNaN(page)==true)
+                return 1;
+                return page;
+        
+    }
+
+        async function getResponse(api,pageno,pagesize){
+            const params = {pageno,pagesize}
+            return $.ajax({
+                url : api,
+                data : params
+
+            })
+        
+        }
+
+        async function printContacts({contacts}){
+        const $list = $("#list");
+        for(c of contacts){
+            const $tr = $('<tr>').appendTo($list);
+            $('<td>').text(c.no).appendTo($tr);
+            const $td = $('<td>').appendTo($tr)
+            $('<a>').attr('href',`/board/read.html?no=${c.no}`).text(c.name).appendTo($td)
+            $('<td>').text(c.address).appendTo($tr);
+            $('<td>').text(c.tel).appendTo($tr);
+
+        }
+    }
+        function getPagination({pageno,pagesize,totalcount,blocksize=5}){
+            const countOfpage = Math.ceil(totalcount/pagesize);
+            const prev = Math.floor((pageno-1)/blocksize)*blocksize;
+            const start = prev +1;
+            let end = prev + blocksize;
+            let next = end +1;
+            if(countOfpage<=end){
+                end = countOfpage;
+                next = 0;
+            }
+            return {pageno,prev,start,end,next}
+
+        }
+
+        function printPagination({pageno,prev,start,next,end}){
+            const $ul = $('#pagination')
+            if(prev>0){
+                const $li = $('<li>').attr('class','page-item').appendTo($ul);
+                    $(`<a href="/board/list.html?pageno=${prev}">`).attr('class','page-link').text('이전').appendTo($li);
+
+            }
+
+            for(let i=start; i<=end; i++){
+                const $li = $('<li>').attr('class','page-item').appendTo($ul);
+                $(`<a href="/board/list.html?page=${i}">`).attr('class','page-link').text(i).appendTo($li);
+                    if(i===pageno){
+                        $li.addClass('active')
+                    }
+            }
+
+            if(next>0){
+                const $li = $('<li>').attr('class','page-item').appendTo($ul);
+                    $(`<a href="/board/list.html?page=${next}">`).attr('class','page-link').text('다음').appendTo($li);
+            }
+            
+        }
+    
+        $(document).ready(async function(){
+            init();
+            const page = getpage();
+            const pagesize = 10;
+            const api = 'http://sample.bmaster.kro.kr/contacts';
+            const response = await getResponse(api,page,pagesize);
+            printContacts(response);
+            const pagination = getPagination(response);
+            console.log(pagination)
+            printPagination(pagination);
+         
+        })
+      
+        
+    </script>
+</head>
+<body>
+    <div id="app">
+        <header>
+        </header>
+        <nav>
+        </nav>
+        <div id="main">
+            <aside>
+
+            </aside>
+            <section>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>번호</th>
+                            <th>이름</th>
+                            <th>주소</th>
+                            <th>연락처</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list">
+
+                    </tbody>
+                </table>
+                <ul id="pagination" class="pagination">
+
+                </ul>
+            </section>
+        </div>
+        <footer></footer>
+
+
+    </div>
+</body>
+</html>
